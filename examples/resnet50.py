@@ -38,7 +38,14 @@ for i in range(3):
     t = resnet_block(graph, t, strides, 512)
     strides = (1,1)
 
-new_graph = ts.optimize(graph, alpha=1.0, budget=1000)
+print("Measuring the performance of computation graph before optimization")
+print("End-to-end inference time = {}ms".format(graph.run_time()))
+
+new_graph = ts.optimize(graph, alpha=1.05, budget=1000)
+
+print("Measuring the performance of computation graph after optimization")
+print("End-to-end inference time = {}ms".format(new_graph.run_time()))
+
 onnx_model = ts.export_onnx(new_graph)
 onnx.checker.check_model(onnx_model)
 onnx.save(onnx_model, "resnet50_taso.onnx")
