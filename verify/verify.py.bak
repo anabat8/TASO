@@ -35,7 +35,7 @@ OP_MERGE_GCONV, \
 OP_CONSTANT_IMM, \
 OP_CONSTANT_ICONV, \
 OP_CONSTANT_ONE, \
-OP_CONSTANT_POOL = list(range(26))
+OP_CONSTANT_POOL = range(26)
 
 PM_OP_TYPE, \
 PM_NUM_INPUTS, \
@@ -51,15 +51,15 @@ PM_NUMDIM, \
 PM_AXIS, \
 PM_PERM, \
 PM_OUTSHUFFLE, \
-PM_MERGE_GCONV_COUNT = list(range(15))
+PM_MERGE_GCONV_COUNT = range(15)
 
 AC_MODE_NONE, \
 AC_MODE_SIGMOID, \
 AC_MODE_RELU, \
-AC_MODE_TANH = list(range(4))
+AC_MODE_TANH = range(4)
 
 PD_MODE_SAME, \
-PD_MODE_VALID = list(range(2))
+PD_MODE_VALID = range(2)
 
 # map opId to (name, (key,rng)*, input arity, outputa arity, possible input dimensions)
 operator_data = {
@@ -81,7 +81,7 @@ operator_data = {
     OP_MUL: ('scalar_mul', (), 2, 1, {2, 3, 4}) # multiply a tensor (first argument) with a scalar (0-D tensor)
 }
 
-for d in list(operator_data.values()):
+for d in operator_data.values():
     for i in range(d[3]):
         name = '{}_{}'.format(d[0], i)
         globals()[name] = z3.Function(name, *( len(d[1]) * [P] + d[2] * [T] + [T]))
@@ -89,7 +89,7 @@ for d in list(operator_data.values()):
 x,y,z,w, one = z3.Consts('x y z w one', T)
 sx, sy, kx, ky, pad, acti, ax = z3.Consts('sx sy kx ky pad acti ax', P)
 
-N = [3,4] # change this to control number of combinations for symbolic validation, e.g., [1,2], [1,3] or [3,4] each provide a reasonable experiment to run and go for coffee (assuming 8 cores)
+N = [1,2,3,4] # change this to control number of combinations for symbolic validation, e.g., [1,2], [1,3] or [3,4] each provide a reasonable experiment to run and go for coffee (assuming 8 cores)
 D = [1,3]
 
 # list of axioms with list of possible values for verify_axioms.py. possible values are actual values for parameters, and shapes for tensors
@@ -568,7 +568,7 @@ def to_z3(tensor, ops):
         for k, rng in d[1]:
             v = params[k]
             if (v not in rng):
-                print((k, v, rng))
+                print(k, v, rng)
                 assert False
             assert v in rng
             assert type(v) is int
@@ -579,7 +579,7 @@ def to_z3(tensor, ops):
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print(("Usage:", sys.argv[0], "<graph substitutions file>"))
+        print("Usage:", sys.argv[0], "<graph substitutions file>")
         sys.exit(-1)
 
     import rules_pb2
@@ -607,17 +607,17 @@ if __name__ == '__main__':
             dst_tensor = rules_pb2.Tensor(opId=output.dstOpId, tsId=output.dstTsId)
             src = to_z3(src_tensor, rule.srcOp)
             dst = to_z3(dst_tensor, rule.dstOp)
-            print(("Z3 expression:\n{}\n".format(src == dst)))
+            print("Z3 expression:\n{}\n".format(src == dst))
             s = z3.Solver()
             for a, b in axioms:
                 s.add(a)
             for lem in lemmas:
                 s.add(lem)
             s.add(src != dst)
-            print(("Checking... ({})".format(i)))
+            print("Checking... ({})".format(i))
             if s.check() == z3.unsat:
                 print("Proved!")
             else:
                 assert False
-        print(('\n' + '='*80))
-    print("Done")
+        print('\n' + '='*80)
+    print "Done"
