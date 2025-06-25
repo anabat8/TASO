@@ -1,8 +1,10 @@
 import argparse
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 import time
 from shared_functions import make_activation, make_conv2d
+
+tf.disable_v2_behavior()
 
 def resnext_block(input, strides, out_channels, groups, name):
     t = make_conv2d(input_tensor=input, filter_shape=(1,1,input.shape[1].value,out_channels), strides=(1,1,1,1), padding="SAME", actimode="RELU", name=name+"_conv1")

@@ -1,8 +1,10 @@
 import argparse
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 import time
 from shared_functions import make_activation, make_conv2d, make_seperable_conv2d, make_avgpool2d, make_maxpool2d
+
+tf.disable_v2_behavior()
 
 def squeeze(out_channels, input):
     return make_conv2d(input_tensor=input, filter_shape=(1,1,input.shape[1].value,out_channels), strides=(1,1,1,1), padding="SAME", actimode="RELU", name="squeeze")

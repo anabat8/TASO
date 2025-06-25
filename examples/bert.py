@@ -43,7 +43,16 @@ t = input
 for i in range(8):
     t = attention(graph, t, 16)
 
-new_graph = ts.optimize(graph, alpha=1.0, budget=100)
+print("Measuring the performance of computation graph before optimization")
+print("End-to-end inference time = {}ms".format(graph.run_time()))
+print("Unoptimized graph cost", " = {}".format(graph.cost()))   
+
+new_graph = ts.optimize(graph, alpha=1.05, budget=100)
+
+print("Measuring the performance of computation graph after optimization")
+print("End-to-end inference time = {}ms".format(new_graph.run_time()))
+print("Optimized graph cost", " = {}".format(new_graph.cost()))
+
 onnx_model = ts.export_onnx(new_graph)
 onnx.checker.check_model(onnx_model)
 onnx.save(onnx_model, "bert_taso.onnx")

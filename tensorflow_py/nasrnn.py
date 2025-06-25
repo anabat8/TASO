@@ -1,8 +1,10 @@
 import argparse
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 import time
 from shared_functions import make_matmul
+
+tf.disable_v2_behavior()
 
 hidden_size = 512
 length = 5
