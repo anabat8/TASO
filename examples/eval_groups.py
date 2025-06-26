@@ -1,6 +1,6 @@
-import xflow
+import taso as ts
 
-graph = xflow.new_graph()
+graph = ts.new_graph()
 input = graph.new_input(dims=(1,512,28,28))
 input = graph.maxpool2d(input=input, kernels=(1,1), strides=(1,1), padding="SAME")
 # Printing the performance of different multi-branch convolutions
