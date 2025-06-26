@@ -74,12 +74,12 @@ def reduction_cell(graph, prev, cur, out_channels):
     outputs.append(graph.add(ts[8], ts[9]))
     return graph.concat(1, outputs)
 
-avg_runtime_ts = np.zeros(100)
-avg_cost_ts = np.zeros(100)
-avg_runtime_baseline = np.zeros(100)
-avg_cost_baseline = np.zeros(100)
+avg_runtime_ts = np.zeros(10)
+avg_cost_ts = np.zeros(10)
+avg_runtime_baseline = np.zeros(10)
+avg_cost_baseline = np.zeros(10)
 
-for i in range(5):
+for i in range(10):
     graph = ts.new_graph()
     input = graph.new_input(dims=(1,3,224,224))
     weight = graph.new_weight(dims=(64,3,7,7))

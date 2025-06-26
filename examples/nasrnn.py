@@ -24,12 +24,12 @@ def nas_node(graph, input, x):
     midt.append(graph.mul(graph.tanh(midt[4]), graph.tanh(midt[5])))
     return graph.tanh(midt[6])
 
-avg_runtime_ts = np.zeros(100)
-avg_cost_ts = np.zeros(100)
-avg_runtime_baseline = np.zeros(100)
-avg_cost_baseline = np.zeros(100)
+avg_runtime_ts = np.zeros(10)
+avg_cost_ts = np.zeros(10)
+avg_runtime_baseline = np.zeros(10)
+avg_cost_baseline = np.zeros(10)
 
-for i in range(5):
+for i in range(10):
     graph = taso.new_graph()
     xs = list()
     for i in range(length):

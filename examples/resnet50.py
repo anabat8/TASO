@@ -21,12 +21,12 @@ def resnet_block(graph, input, strides, out_channels):
                            activation="RELU")
     return graph.relu(graph.add(input, t))
 
-avg_runtime_ts = np.zeros(100)
-avg_cost_ts = np.zeros(100)
-avg_runtime_baseline = np.zeros(100)
-avg_cost_baseline = np.zeros(100)
+avg_runtime_ts = np.zeros(10)
+avg_cost_ts = np.zeros(10)
+avg_runtime_baseline = np.zeros(10)
+avg_cost_baseline = np.zeros(10)
 
-for i in range(5):
+for i in range(10):
     graph = ts.new_graph()
     input = graph.new_input(dims=(1,64,56,56))
     t = input
