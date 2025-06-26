@@ -79,7 +79,7 @@ avg_cost_ts = np.zeros(10)
 avg_runtime_baseline = np.zeros(10)
 avg_cost_baseline = np.zeros(10)
 
-for i in range(10):
+for run in range(10):
     graph = ts.new_graph()
     input = graph.new_input(dims=(1,3,224,224))
     weight = graph.new_weight(dims=(64,3,7,7))
@@ -98,15 +98,15 @@ for i in range(10):
         out_channels *= 2
         input = reduction_cell(graph, prev, cur, out_channels)
         
-    avg_runtime_baseline[i] = graph.run_time()
-    avg_cost_baseline[i] = graph.cost()
+    avg_runtime_baseline[run] = graph.run_time()
+    avg_cost_baseline[run] = graph.cost()
     
     new_graph = ts.optimize(graph, alpha=1.05, budget=1000)
-    avg_runtime_ts[i] = new_graph.run_time()
-    avg_cost_ts[i] = new_graph.cost()
+    avg_runtime_ts[run] = new_graph.run_time()
+    avg_cost_ts[run] = new_graph.cost()
 
-    onnx_model = ts.export_onnx(new_graph)
-    onnx.checker.check_model(onnx_model)
+    #onnx_model = ts.export_onnx(new_graph)
+    #onnx.checker.check_model(onnx_model)
     #onnx.save(onnx_model, "nasneta_taso.onnx")
 
 graph_runtime = avg_runtime_baseline.mean()

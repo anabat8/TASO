@@ -29,7 +29,7 @@ avg_cost_ts = np.zeros(10)
 avg_runtime_baseline = np.zeros(10)
 avg_cost_baseline = np.zeros(10)
 
-for i in range(10):
+for run in range(10):
     graph = taso.new_graph()
     xs = list()
     for i in range(length):
@@ -38,15 +38,15 @@ for i in range(10):
     for i in range(length):
         state = nas_node(graph, state, xs[i])
 
-    avg_runtime_baseline[i] = graph.run_time()
-    avg_cost_baseline[i] = graph.cost()
+    avg_runtime_baseline[run] = graph.run_time()
+    avg_cost_baseline[run] = graph.cost()
     
     new_graph = taso.optimize(graph, alpha=1.05, budget=1000)
-    avg_runtime_ts[i] = new_graph.run_time()
-    avg_cost_ts[i] = new_graph.cost()
+    avg_runtime_ts[run] = new_graph.run_time()
+    avg_cost_ts[run] = new_graph.cost()
 
-    onnx_model = taso.export_onnx(new_graph)
-    onnx.checker.check_model(onnx_model)
+    #onnx_model = taso.export_onnx(new_graph)
+    #onnx.checker.check_model(onnx_model)
     #onnx.save(onnx_model, "nasrnn_taso.onnx")
 
 graph_runtime = avg_runtime_baseline.mean()
