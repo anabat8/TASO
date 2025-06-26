@@ -1,5 +1,6 @@
 import taso as ts
 import onnx
+import numpy as np
 
 def resnet_block(graph, input, strides, out_channels):
     w1 = graph.new_weight(dims=(out_channels,input.dim(1),1,1))
@@ -20,34 +21,51 @@ def resnet_block(graph, input, strides, out_channels):
                            activation="RELU")
     return graph.relu(graph.add(input, t))
 
-graph = ts.new_graph()
-input = graph.new_input(dims=(1,64,56,56))
-t = input
-for i in range(3):
-    t = resnet_block(graph, t, (1,1), 64)
-strides = (2,2)
-for i in range(4):
-    t = resnet_block(graph, t, strides, 128)
-    strides = (1,1)
-strides = (2,2)
-for i in range(6):
-    t = resnet_block(graph, t, strides, 256)
-    strides = (1,1)
-strides = (2,2)
-for i in range(3):
-    t = resnet_block(graph, t, strides, 512)
-    strides = (1,1)
+avg_runtime_ts = np.zeros(100)
+avg_cost_ts = np.zeros(100)
+avg_runtime_baseline = np.zeros(100)
+avg_cost_baseline = np.zeros(100)
+
+for i in range(100):
+    graph = ts.new_graph()
+    input = graph.new_input(dims=(1,64,56,56))
+    t = input
+    for i in range(3):
+        t = resnet_block(graph, t, (1,1), 64)
+    strides = (2,2)
+    for i in range(4):
+        t = resnet_block(graph, t, strides, 128)
+        strides = (1,1)
+    strides = (2,2)
+    for i in range(6):
+        t = resnet_block(graph, t, strides, 256)
+        strides = (1,1)
+    strides = (2,2)
+    for i in range(3):
+        t = resnet_block(graph, t, strides, 512)
+        strides = (1,1)
+
+    avg_runtime_baseline[i] = graph.run_time()
+    avg_cost_baseline[i] = graph.cost()
+    
+    new_graph = ts.optimize(graph, alpha=1.05, budget=1000)
+    avg_runtime_ts[i] = new_graph.run_time()
+    avg_cost_ts[i] = new_graph.cost()
+
+    onnx_model = ts.export_onnx(new_graph)
+    onnx.checker.check_model(onnx_model)
+    #onnx.save(onnx_model, "resnet50_taso.onnx")
+
+graph_runtime = avg_runtime_baseline.mean()
+graph_cost = avg_cost_baseline.mean()
 
 print("Measuring the performance of computation graph before optimization")
-print("End-to-end inference time = {}ms".format(graph.run_time()))
-print("Unoptimized graph cost", " = {}".format(graph.cost()))
+print("End-to-end inference time avg over 100 runs = {}ms".format(graph_runtime))
+print("Unoptimized graph cost avg over 100 runs", " = {}".format(graph_cost))
 
-new_graph = ts.optimize(graph, alpha=1.05, budget=1000)
+new_graph_runtime = avg_runtime_ts.mean()
+new_graph_cost = avg_cost_ts.mean()
 
 print("Measuring the performance of computation graph after optimization")
-print("End-to-end inference time = {}ms".format(new_graph.run_time()))
-print("Optimized graph cost", " = {}".format(new_graph.cost()))
-
-onnx_model = ts.export_onnx(new_graph)
-onnx.checker.check_model(onnx_model)
-onnx.save(onnx_model, "resnet50_taso.onnx")
+print("End-to-end inference time avg over 100 runs = {}ms".format(new_graph_runtime))
+print("Optimized graph cost avg over 100 runs", " = {}".format(new_graph_cost))

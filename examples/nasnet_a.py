@@ -1,5 +1,6 @@
 import taso as ts
 import onnx
+import numpy as np
 
 def squeeze(graph, out_channels, input):
     weight = graph.new_weight(dims=(out_channels, input.dim(1), 1, 1))
@@ -73,34 +74,51 @@ def reduction_cell(graph, prev, cur, out_channels):
     outputs.append(graph.add(ts[8], ts[9]))
     return graph.concat(1, outputs)
 
-graph = ts.new_graph()
-input = graph.new_input(dims=(1,3,224,224))
-weight = graph.new_weight(dims=(64,3,7,7))
-input = graph.conv2d(input=input, weight=weight, strides=(2,2),
-                 padding="SAME", activation="RELU")
-input = graph.maxpool2d(input=input, kernels=(3,3), strides=(2,2), padding="SAME")
+avg_runtime_ts = np.zeros(100)
+avg_cost_ts = np.zeros(100)
+avg_runtime_baseline = np.zeros(100)
+avg_cost_baseline = np.zeros(100)
 
-out_channels = 128
-for i in range(3):
-    prev = input
-    cur = input
-    for j in range(5):
-        t = normal_cell(graph, prev, cur, out_channels)
-        prev = cur
-        cur = t
-    out_channels *= 2
-    input = reduction_cell(graph, prev, cur, out_channels)
+for i in range(100):
+    graph = ts.new_graph()
+    input = graph.new_input(dims=(1,3,224,224))
+    weight = graph.new_weight(dims=(64,3,7,7))
+    input = graph.conv2d(input=input, weight=weight, strides=(2,2),
+                    padding="SAME", activation="RELU")
+    input = graph.maxpool2d(input=input, kernels=(3,3), strides=(2,2), padding="SAME")
+
+    out_channels = 128
+    for i in range(3):
+        prev = input
+        cur = input
+        for j in range(5):
+            t = normal_cell(graph, prev, cur, out_channels)
+            prev = cur
+            cur = t
+        out_channels *= 2
+        input = reduction_cell(graph, prev, cur, out_channels)
+        
+    avg_runtime_baseline[i] = graph.run_time()
+    avg_cost_baseline[i] = graph.cost()
     
-print("Measuring the performance of computation graph before optimization")
-print("End-to-end inference time = {}ms".format(graph.run_time()))
-print("Unoptimized graph cost", " = {}".format(graph.cost()))    
+    new_graph = ts.optimize(graph, alpha=1.05, budget=1000)
+    avg_runtime_ts[i] = new_graph.run_time()
+    avg_cost_ts[i] = new_graph.cost()
 
-new_graph = ts.optimize(graph, alpha=1.05, budget=100)
+    onnx_model = ts.export_onnx(new_graph)
+    onnx.checker.check_model(onnx_model)
+    #onnx.save(onnx_model, "nasneta_taso.onnx")
+
+graph_runtime = avg_runtime_baseline.mean()
+graph_cost = avg_cost_baseline.mean()
+
+print("Measuring the performance of computation graph before optimization")
+print("End-to-end inference time avg over 100 runs = {}ms".format(graph_runtime))
+print("Unoptimized graph cost avg over 100 runs", " = {}".format(graph_cost))
+
+new_graph_runtime = avg_runtime_ts.mean()
+new_graph_cost = avg_cost_ts.mean()
 
 print("Measuring the performance of computation graph after optimization")
-print("End-to-end inference time = {}ms".format(new_graph.run_time()))
-print("Optimized graph cost", " = {}".format(new_graph.cost()))
-
-onnx_model = ts.export_onnx(new_graph)
-onnx.checker.check_model(onnx_model)
-onnx.save(onnx_model, "nasneta_taso.onnx")
+print("End-to-end inference time avg over 100 runs = {}ms".format(new_graph_runtime))
+print("Optimized graph cost avg over 100 runs", " = {}".format(new_graph_cost))
