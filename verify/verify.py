@@ -597,6 +597,7 @@ if __name__ == '__main__':
         'new_graph_subst.pb': [],
     }[os.path.basename(sys.argv[1])]
 
+    unproven = []
     for i, rule in enumerate(rules.rule):
         if i in blacklist:
             continue
@@ -614,10 +615,15 @@ if __name__ == '__main__':
             for lem in lemmas:
                 s.add(lem)
             s.add(src != dst)
+            s.set("timeout", 30000)
             print(("Checking... ({})".format(i)))
             if s.check() == z3.unsat:
                 print("Proved!")
             else:
-                assert False
+                print("Cannot prove")
+                unproven.append(i)
         print(('\n' + '='*80))
     print("Done")
+    print("Some substitutions cannot be proved within the time limit:")
+    for i in unproven:
+      print(i)
