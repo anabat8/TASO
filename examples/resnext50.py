@@ -26,7 +26,7 @@ avg_cost_ts = np.zeros(100)
 avg_runtime_baseline = np.zeros(100)
 avg_cost_baseline = np.zeros(100)
 
-for i in range(100):
+for i in range(5):
     graph = ts.new_graph()
     input = graph.new_input(dims=(1,3,224,224))
     weight = graph.new_weight(dims=(64,3,7,7))
@@ -63,12 +63,12 @@ graph_runtime = avg_runtime_baseline.mean()
 graph_cost = avg_cost_baseline.mean()
 
 print("Measuring the performance of computation graph before optimization")
-print("End-to-end inference time avg over 100 runs = {}ms".format(graph_runtime))
-print("Unoptimized graph cost avg over 100 runs", " = {}".format(graph_cost))
+print("End-to-end avg inference time = {}ms".format(graph_runtime))
+print("Unoptimized graph avg cost", " = {}".format(graph_cost))
 
 new_graph_runtime = avg_runtime_ts.mean()
 new_graph_cost = avg_cost_ts.mean()
 
 print("Measuring the performance of computation graph after optimization")
-print("End-to-end inference time avg over 100 runs = {}ms".format(new_graph_runtime))
-print("Optimized graph cost avg over 100 runs", " = {}".format(new_graph_cost))
+print("End-to-end avg inference time = {}ms".format(new_graph_runtime))
+print("Optimized graph avg cost", " = {}".format(new_graph_cost))
